@@ -132,7 +132,6 @@ def get_balances():
             "profit_loss_percent": profit_loss_pct,
             "acquired_free": acquired_free
         })
-
     return result
 
 @app.get("/balances")
