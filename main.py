@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 
 # for run these code enter: uvicorn main:app --reload --port 8001
+#margem de erro da API $20
 
 # Carrega as variáveis do .env
 load_dotenv()
@@ -84,8 +85,12 @@ def get_balances():
         total_balance = row['free']
 
         # Preço atual
-        current_price = get_price_in_usdt(asset)
-        current_value = total_balance * current_price if current_price else None
+        if asset in ['BRL', 'USDT']:
+            current_price = 1  # Para BRL e USDT → preço unitário
+            current_value = total_balance
+        else:
+            current_price = get_price_in_usdt(asset)
+            current_value = total_balance * current_price if current_price else None
 
         # Busca trades
         lookup_asset = normalize_for_lookup(asset)
@@ -108,9 +113,12 @@ def get_balances():
         acquired_free = False
 
         # Lucro/Prejuízo
-        if current_value is not None:
+        if asset in ['BRL', 'USDT']:
+            profit_loss = total_balance
+            profit_loss_pct = 100.0
+            acquired_free = True
+        elif current_value is not None:
             if not total_cost or total_cost == 0:
-                # Sem custo → lucro = valor atual
                 profit_loss = current_value
                 profit_loss_pct = 100.0
                 acquired_free = True
@@ -138,16 +146,49 @@ def get_balances():
 def balances_endpoint():
     try:
         result = get_balances()
-        total_portfolio_value = 0
-        for item in result:
-            if item['asset'] in ['BRL', 'USDT']:
-                total_portfolio_value += item['total_balance']
-            elif item['current_value_usdt'] is not None:
-                total_portfolio_value += item['current_value_usdt']
-
-        return {
-            "total_portfolio_value_usdt": total_portfolio_value,
-            "assets": result
-        }
+        return result  # ← Agora só retorna a lista direta
     except Exception as e:
         return {"error": str(e), "message": "Erro ao calcular os balances."}
+
+from datetime import datetime
+
+@app.get("/transactions")
+def transactions_endpoint():
+    try:
+        balances = get_balances()
+        all_trades = []
+
+        for item in balances:
+            asset = item['asset']
+            if asset in ['BRL']:
+                continue  # pula BRL pois não tem get_my_trades
+
+            lookup_asset = normalize_for_lookup(asset)
+            symbol = f"{lookup_asset}USDT"
+            try:
+                trades = client.get_my_trades(symbol=symbol)
+                for t in trades:
+                    timestamp_ms = t['time']
+                    timestamp_sec = timestamp_ms / 1000
+                    human_time = datetime.utcfromtimestamp(timestamp_sec).strftime('%Y-%m-%d %H:%M:%S')
+
+                    all_trades.append({
+                        "asset": asset,
+                        "symbol": symbol,
+                        "orderId": t['orderId'],
+                        "price": float(t['price']),
+                        "qty": float(t['qty']),
+                        "quoteQty": float(t['quoteQty']),
+                        "commission": float(t['commission']),
+                        "commissionAsset": t['commissionAsset'],
+                        "time": t['time'],
+                        "timestamp_human": human_time,
+                        "isBuyer": t['isBuyer']
+                    })
+            except Exception as e:
+                continue
+
+        return all_trades
+
+    except Exception as e:
+        return {"error": str(e), "message": "Erro ao buscar transações."}
