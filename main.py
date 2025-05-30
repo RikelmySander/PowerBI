@@ -4,7 +4,7 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 
-# for run these code enter: uvicorn main:app --reload --port 8001
+# for run these code enter: uvicorn main:app --reload --port 8000
 #margem de erro da API $20
 
 # Carrega as variáveis do .env
