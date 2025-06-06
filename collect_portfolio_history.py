@@ -16,24 +16,37 @@ def collect_and_save():
         # 2. Soma todos os current_value_usdt
         total_value = sum(item['current_value_usdt'] for item in data if item['current_value_usdt'] is not None)
 
-        # 3. Data e hora atual
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # 3. Data atual (apenas data, sem hora)
+        today = datetime.now().strftime("%Y-%m-%d")
 
-        # 4. Checa se o CSV existe
-        file_exists = os.path.isfile(CSV_FILE)
+        # 4. Carrega dados existentes, se houver
+        rows = []
+        if os.path.isfile(CSV_FILE):
+            with open(CSV_FILE, mode='r', newline='') as file:
+                reader = csv.reader(file)
+                rows = list(reader)
 
-        # 5. Escreve no CSV
-        with open(CSV_FILE, mode='a', newline='') as file:
+        # 5. Atualiza ou adiciona registro
+        updated = False
+        for i, row in enumerate(rows):
+            if row[0].startswith(today):  # se já existe registro para hoje
+                rows[i] = [f"{today} {datetime.now().strftime('%H:%M:%S')}", total_value]
+                updated = True
+                break
+
+        if not updated:
+            # Adiciona cabeçalho se arquivo está vazio
+            if not rows:
+                rows.append(['datetime', 'total_portfolio_value_usdt'])
+            # Adiciona novo registro
+            rows.append([f"{today} {datetime.now().strftime('%H:%M:%S')}", total_value])
+
+        # 6. Escreve o CSV atualizado
+        with open(CSV_FILE, mode='w', newline='') as file:
             writer = csv.writer(file)
+            writer.writerows(rows)
 
-            # Escreve cabeçalho se não existir
-            if not file_exists:
-                writer.writerow(['datetime', 'total_portfolio_value_usdt'])
-
-            # Escreve os dados
-            writer.writerow([now, total_value])
-
-        print(f"[{now}] Total Portfolio Value: ${total_value:.2f} registrado com sucesso!")
+        print(f"[{today}] Total Portfolio Value: ${total_value:.2f} registrado/atualizado com sucesso!")
 
     except Exception as e:
         print(f"Erro ao coletar ou salvar: {e}")
