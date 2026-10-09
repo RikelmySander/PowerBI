@@ -1,13 +1,2 @@
 @echo off
-cd "C:\Users\Rikel\Documents\Power BI\Crypto\PowerBI"
-
-echo Iniciando Uvicorn...
-start "" uvicorn main:app --reload --port 8000
-
-timeout /t 30
-
-echo Coletando historico do portfolio...
-python collect_portfolio_history.py
-
-echo Processo concluido.
-pause
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0start_dashboard.ps1"

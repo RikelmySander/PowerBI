@@ -1,0 +1,6 @@
+fastapi>=0.116,<1
+uvicorn[standard]>=0.35,<1
+python-binance>=1.0.29,<2
+python-dotenv>=1.1,<2
+requests>=2.32,<3
+openpyxl>=3.1,<4

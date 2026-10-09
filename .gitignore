@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.idea/
+logs/
+temp.json
+.env
+.env.*
+!.env.example
+PlanilhaCalculaCripto.xlsx
+portfolio_history.csv

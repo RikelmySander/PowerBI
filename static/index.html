@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0c10">
+  <title>Crypto Investments</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23090a0d'/%3E%3Cpath d='M32 9 43 20 32 31 21 20 32 9Zm-16 16 7 7-7 7-7-7 7-7Zm32 0 7 7-7 7-7-7 7-7ZM32 33l11 11-11 11-11-11 11-11Zm0-9 8 8-8 8-8-8 8-8Z' fill='%23f0b90b'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Crypto Investments">
+        <img class="brand-logo" src="/static/binance-logo.svg" alt="Logo da Binance">
+        <span class="brand-copy"><strong>Crypto Investments</strong><small>Binance Portfolio</small></span>
+      </a>
+      <div class="header-actions">
+        <button id="privacyToggle" class="icon-button" type="button" aria-label="Ocultar valores" aria-pressed="false" title="Ocultar valores">
+          <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.1 12s3.6-6 9.9-6 9.9 6 9.9 6-3.6 6-9.9 6-9.9-6-9.9-6Z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.1A10.5 10.5 0 0 1 12 6c6.3 0 9.9 6 9.9 6a16 16 0 0 1-2.4 3.1M6.2 6.2C3.6 8 2.1 12 2.1 12s3.6 6 9.9 6c1.5 0 2.9-.4 4.1-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+        </button>
+        <label class="search"><span aria-hidden="true">⌕</span><input id="assetSearch" type="search" placeholder="Filtrar ativo" autocomplete="off"></label>
+        <button id="refreshButton" class="refresh-button" type="button"><span>↻</span> Atualizar</button>
+      </div>
+    </header>
+
+    <div id="notice" class="notice" hidden></div>
+
+    <section class="hero">
+      <div>
+        <p class="eyebrow">VISÃO GERAL DA CARTEIRA</p>
+        <h1>Seus ativos, com clareza.</h1>
+        <p class="subtitle">Posição consolidada de Spot, Earn e Copy Spot, atualizada diretamente pela Binance.</p>
+      </div>
+      <div class="sync-state"><span id="syncDot" class="sync-dot"></span><div><small>Última atualização</small><strong id="lastUpdated">Carregando…</strong></div></div>
+    </section>
+
+    <section class="metrics" aria-label="Resumo da carteira">
+      <article class="metric metric-primary">
+        <div class="metric-heading"><span>Valor da carteira</span><span class="metric-icon">◈</span></div>
+        <strong id="portfolioUsd" class="metric-value skeleton">—</strong>
+        <span id="portfolioBrl" class="metric-detail">—</span>
+      </article>
+      <article class="metric">
+        <div class="metric-heading"><span>Custo estimado</span><span class="metric-icon">◎</span></div>
+        <strong id="investedUsd" class="metric-value skeleton">—</strong>
+        <span id="investedDetail" class="metric-detail">Baseada no preço médio das compras</span>
+      </article>
+      <article class="metric">
+        <div class="metric-heading"><span>Resultado</span><span class="metric-icon">↗</span></div>
+        <strong id="pnlUsd" class="metric-value skeleton">—</strong>
+        <span id="roiPercent" class="metric-detail pill">—</span>
+      </article>
+      <article class="metric">
+        <div class="metric-heading"><span>Ativos</span><span class="metric-icon">◆</span></div>
+        <strong id="assetCount" class="metric-value skeleton">—</strong>
+        <span id="exchangeRate" class="metric-detail">—</span>
+      </article>
+    </section>
+
+    <section class="insights" aria-label="Indicadores da carteira">
+      <article class="insight-card"><span>Variação estimada 24h</span><strong id="change24h">—</strong><small id="change24hValue">—</small></article>
+      <article class="insight-card"><span>Maior posição</span><strong id="largestPosition">—</strong><small>Participação na carteira</small></article>
+      <article class="insight-card"><span>Concentração Top 3</span><strong id="top3Concentration">—</strong><small id="diversificationLabel">—</small></article>
+      <article class="insight-card"><span>Reserva em stablecoins</span><strong id="stablecoinShare">—</strong><small>USDT, USDC, FDUSD, DAI e TUSD</small></article>
+      <article class="insight-card copy-spot-card"><span>Patrimônio no Copy Spot</span><strong id="copySpotValue">—</strong><small id="copySpotAssets">Consultando a Binance…</small></article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel allocation-panel">
+        <div class="panel-header"><div><span class="panel-kicker">DISTRIBUIÇÃO</span><h2>Alocação da carteira</h2></div></div>
+        <div class="allocation-content">
+          <div id="donutChart" class="donut"><div class="donut-center"><small>Total</small><strong id="donutTotal">—</strong></div></div>
+          <div id="allocationLegend" class="legend"></div>
+        </div>
+      </article>
+
+      <article class="panel history-panel">
+        <div class="panel-header"><div><span class="panel-kicker">EVOLUÇÃO MENSAL</span><h2>Valor ao longo do tempo</h2></div><span id="historyDelta" class="delta">—</span></div>
+        <div id="historyChart" class="line-chart" role="img" aria-label="Evolução do valor da carteira"><div class="empty-state">Carregando histórico…</div></div>
+      </article>
+    </section>
+
+    <section class="rankings">
+      <article class="panel ranking-card">
+        <div class="panel-header"><div><span class="panel-kicker positive">DESTAQUES</span><h2>Melhores desempenhos</h2></div></div>
+        <div id="bestAssets" class="ranking-list"></div>
+      </article>
+      <article class="panel ranking-card">
+        <div class="panel-header"><div><span class="panel-kicker negative">ATENÇÃO</span><h2>Maiores quedas</h2></div></div>
+        <div id="worstAssets" class="ranking-list"></div>
+      </article>
+    </section>
+
+    <section class="panel assets-panel">
+      <div class="panel-header"><div><span class="panel-kicker">POSIÇÕES</span><h2>Meus ativos</h2></div><div class="assets-actions"><span id="visibleAssets" class="muted"></span><button id="clearColumnFilters" class="clear-filters" type="button" hidden>Limpar filtros</button></div></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Ativo</th><th>Quantidade</th><th>Preço</th><th>24h</th><th>Valor</th><th>Preço médio</th><th>Resultado</th><th>ROI</th></tr>
+            <tr class="filter-row">
+              <th><input data-column-filter="asset" type="search" placeholder="Pesquisar" aria-label="Filtrar coluna Ativo"></th>
+              <th><input data-column-filter="quantity" type="search" placeholder="Filtrar" aria-label="Filtrar coluna Quantidade"></th>
+              <th><input data-column-filter="price" type="search" placeholder="Filtrar" aria-label="Filtrar coluna Preço"></th>
+              <th><input data-column-filter="change24h" type="search" placeholder="Filtrar" aria-label="Filtrar coluna Variação 24 horas"></th>
+              <th><input data-column-filter="value" type="search" placeholder="Filtrar" aria-label="Filtrar coluna Valor"></th>
+              <th><input data-column-filter="average" type="search" placeholder="Filtrar" aria-label="Filtrar coluna Preço médio"></th>
+              <th><input data-column-filter="result" type="search" placeholder="Filtrar" aria-label="Filtrar coluna Resultado"></th>
+              <th><input data-column-filter="roi" type="search" placeholder="Filtrar" aria-label="Filtrar coluna ROI"></th>
+            </tr>
+          </thead>
+          <tbody id="assetsTable"><tr><td colspan="8"><div class="empty-state">Carregando ativos…</div></td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel activity-panel">
+      <div class="panel-header activity-header">
+        <div><span class="panel-kicker">MOVIMENTAÇÕES</span><h2>Histórico</h2></div>
+        <div class="tabs" role="tablist"><button class="tab active" data-tab="trades" type="button">Negociações Spot</button><button class="tab" data-tab="orders" type="button">Ordens abertas</button><button class="tab" data-tab="crypto" type="button">Cripto</button><button class="tab" data-tab="fiat" type="button">Fiat</button></div>
+      </div>
+      <p id="tradeHistoryNote" class="activity-note">Exibe negociações Spot dos pares identificados. A Binance ainda não disponibiliza as execuções do Copy Spot pela API pública.</p>
+      <div class="table-wrap">
+        <table id="tradesTable" class="activity-table">
+          <thead><tr><th>Data</th><th>Ativo / par</th><th>Operação</th><th>Quantidade</th><th>Preço no par</th><th>Total no par</th></tr></thead>
+          <tbody id="transactionsTable"></tbody>
+        </table>
+        <table id="fiatTable" class="activity-table" hidden>
+          <thead><tr><th>Data</th><th>Tipo</th><th>Moeda</th><th>Valor</th><th>Status</th><th>Método</th></tr></thead>
+          <tbody id="fiatHistoryTable"></tbody>
+        </table>
+        <table id="ordersTable" class="activity-table" hidden>
+          <thead><tr><th>Data</th><th>Par</th><th>Lado</th><th>Tipo</th><th>Preço</th><th>Quantidade</th><th>Executado</th><th>Status</th></tr></thead>
+          <tbody id="openOrdersTable"></tbody>
+        </table>
+        <table id="cryptoTable" class="activity-table" hidden>
+          <thead><tr><th>Data</th><th>Tipo</th><th>Ativo</th><th>Quantidade</th><th>Rede</th><th>Status</th><th>Transação</th></tr></thead>
+          <tbody id="cryptoMovementsTable"></tbody>
+        </table>
+      </div>
+    </section>
+    <footer><span>Crypto Investments</span><span>Dados protegidos e exibidos apenas neste computador.</span></footer>
+  </main>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
